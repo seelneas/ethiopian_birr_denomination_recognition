@@ -140,11 +140,3 @@ The app will open in your browser at `http://localhost:8501`.
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
-
-## 👤 Author
-
-**Selamawit Elias**
-
----
-
-> *Built as a capstone project demonstrating the application of deep learning and transfer learning to real-world currency recognition.*
