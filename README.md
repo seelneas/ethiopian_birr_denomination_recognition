@@ -7,10 +7,11 @@ A deep learning-powered web application that automatically identifies Ethiopian 
 ## ✨ Features
 
 - **Banknote Classification** — Recognizes five Ethiopian Birr denominations: **5**, **10**, **50**, **100**, and **200** Birr
+- **"Other" Rejection** — Images that are not Ethiopian Birr banknotes are classified as **Other**, preventing false denomination predictions
 - **Dual Input Modes** — Upload an image file or capture directly from your device camera
 - **Voice Output** — Automatically speaks the prediction result aloud using the Web Speech API for visually impaired users
 - **Confidence Scoring** — Displays prediction confidence with a per-class probability breakdown
-- **Transfer Learning** — Uses **MobileNetV2** pre-trained on ImageNet, fine-tuned on Ethiopian Birr banknote images for **94% test accuracy**
+- **Transfer Learning** — Uses **MobileNetV2** pre-trained on ImageNet, fine-tuned on Ethiopian Birr banknote and natural images for **99% test accuracy**
 
 ---
 
@@ -23,9 +24,18 @@ A deep learning-powered web application that automatically identifies Ethiopian 
 ├── notebook/
 │   └── birr_banknote_cnn.ipynb  # Training notebook (EDA, CNN, Transfer Learning)
 ├── data/
-│   └── Ethiopian_Currency/
-│       ├── train/               # Training images (1,544 images across 11 classes)
-│       └── test/                # Test images (375 images across 11 classes)
+│   ├── Ethiopian_Currency/
+│   │   ├── train/               # Training images (1,544 Birr images across 11 classes)
+│   │   └── test/                # Test images (375 Birr images across 11 classes)
+│   └── natural_images/          # "Other" class images (6,899 images across 8 categories)
+│       ├── airplane/
+│       ├── car/
+│       ├── cat/
+│       ├── dog/
+│       ├── flower/
+│       ├── fruit/
+│       ├── motorbike/
+│       └── person/
 ├── requirements.txt        # Python dependencies
 ├── LICENSE                 # MIT License
 └── README.md
@@ -33,9 +43,13 @@ A deep learning-powered web application that automatically identifies Ethiopian 
 
 ---
 
-## 📊 Dataset
+## 📊 Datasets
 
-The dataset contains **1,919 images** of Ethiopian Birr banknotes, organized into 11 classes (front and back of each denomination, plus background):
+This project uses two datasets:
+
+### 1. Ethiopian Currency Dataset
+
+The primary dataset contains **1,919 images** of Ethiopian Birr banknotes, organized into 11 classes (front and back of each denomination, plus background):
 
 | Denomination | Train (front) | Train (back) | Test (front) | Test (back) |
 |:------------|:-------------:|:------------:|:------------:|:-----------:|
@@ -48,6 +62,33 @@ The dataset contains **1,919 images** of Ethiopian Birr banknotes, organized int
 
 The training pipeline groups front/back images into 5 denomination classes for final classification.
 
+> 📥 **Dataset source:** [Ethiopian Currency Dataset on Kaggle](https://www.kaggle.com/datasets/iyasusaketa/ethiopian-note-currency-dataset)
+
+### 2. Natural Images Dataset (for "Other" class)
+
+To enable the model to reject non-Birr images, the **Natural Images** dataset is used as the "Other" class. It contains **6,899 images** across 8 everyday object categories:
+
+| Category   | Images |
+|:-----------|:------:|
+| Airplane   | 727    |
+| Car        | 968    |
+| Cat        | 885    |
+| Dog        | 702    |
+| Flower     | 843    |
+| Fruit      | 1,000  |
+| Motorbike  | 788    |
+| Person     | 986    |
+
+> 📥 **Dataset source:** [Natural Images Dataset on Kaggle](https://www.kaggle.com/datasets/prasunroy/natural-images)
+
+### Combined Dataset Summary
+
+| Split    | Birr Images | Other Images | Total  |
+|:---------|:-----------:|:------------:|:------:|
+| Training | 1,480       | 5,519        | 6,999  |
+| Testing  | 360         | 1,380        | 1,740  |
+| **Total**| **1,840**   | **6,899**    | **8,739** |
+
 ---
 
 ## 🧠 Model Architecture
@@ -56,24 +97,25 @@ Two models were developed and compared in the training notebook:
 
 ### 1. Custom CNN (Baseline)
 - Built from scratch with convolutional and dense layers
-- **Test Accuracy: 64%**
-- Showed significant overfitting (high train accuracy, low validation accuracy)
+- **Test Accuracy: 95%** (6-class)
+- Showed significant overfitting during training (high train accuracy, lower validation accuracy)
 
 ### 2. MobileNetV2 Transfer Learning (Final Model) ✅
 - Pre-trained **MobileNetV2** backbone (ImageNet weights, frozen)
 - Custom classification head with Global Average Pooling and Dense layers
 - Data augmentation (rotation, zoom, flip, shift)
 - Callbacks: EarlyStopping + ReduceLROnPlateau
-- **Test Accuracy: 94%**
+- **Test Accuracy: 99%** (6-class)
 
 | Class    | Precision | Recall | F1-Score |
 |:---------|:---------:|:------:|:--------:|
-| 5 Birr   | 0.94      | 0.90   | 0.92     |
-| 10 Birr  | 0.96      | 0.97   | 0.97     |
-| 50 Birr  | 0.96      | 0.97   | 0.97     |
-| 100 Birr | 0.91      | 0.93   | 0.92     |
-| 200 Birr | 0.94      | 0.93   | 0.94     |
-| **Overall** | **0.94** | **0.94** | **0.94** |
+| 5 Birr   | 0.88      | 0.94   | 0.91     |
+| 10 Birr  | 1.00      | 0.96   | 0.98     |
+| 50 Birr  | 0.99      | 0.99   | 0.99     |
+| 100 Birr | 0.93      | 0.89   | 0.91     |
+| 200 Birr | 0.93      | 0.94   | 0.94     |
+| Other    | 1.00      | 1.00   | 1.00     |
+| **Weighted Avg** | **0.99** | **0.99** | **0.99** |
 
 ---
 
@@ -116,9 +158,9 @@ The app will open in your browser at `http://localhost:8501`.
 ## 📖 Usage
 
 1. **Choose an input method** — "Upload Image" or "Use Camera"
-2. **Provide a banknote image** — Upload a `.jpg`/`.jpeg`/`.png` file, or snap a photo using your device camera
-3. **Click "🔍 Recognize Banknote"** — The model analyzes the image and predicts the denomination
-4. **View results** — See the predicted denomination, confidence score, per-class probabilities, and hear the result spoken aloud
+2. **Provide an image** — Upload a `.jpg`/`.jpeg`/`.png` file, or snap a photo using your device camera
+3. **Click "🔍 Analyze Image"** — The model analyzes the image and predicts the denomination
+4. **View results** — See the predicted denomination (or "Other" if not a Birr banknote), confidence score, per-class probabilities, and hear the result spoken aloud
 
 ---
 
