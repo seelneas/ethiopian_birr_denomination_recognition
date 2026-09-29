@@ -2,6 +2,8 @@
 
 A deep learning-powered web application that automatically identifies Ethiopian Birr banknote denominations from images. Built with **TensorFlow/Keras** and served through an interactive **Streamlit** interface, the app supports both image upload and real-time camera capture — with voice output for accessibility.
 
+> 🚀 **Live Demo:** [Try the app here](https://ethiopianbirrdenominationrecognition-4brtybecc6bhs2ak4p92d2.streamlit.app/)
+
 ---
 
 ## ✨ Features
