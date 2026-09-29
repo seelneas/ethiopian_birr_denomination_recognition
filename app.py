@@ -25,7 +25,8 @@ CLASS_NAMES = [
     "10 Birr",
     "50 Birr",
     "100 Birr",
-    "200 Birr"
+    "200 Birr",
+    "Other"
 ]
 
 
@@ -100,9 +101,19 @@ def predict_image(image):
 
 def speak_result(predicted_class):
 
-    speech_text = (
-        f"The predicted denomination is {predicted_class}"
-    )
+    if predicted_class == "Other":
+
+        speech_text = (
+            "This image does not appear to be "
+            "an Ethiopian Birr banknote."
+        )
+
+    else:
+
+        speech_text = (
+            f"The predicted denomination is "
+            f"{predicted_class}"
+        )
 
     components.html(
         f"""
@@ -141,9 +152,10 @@ st.title(
 )
 
 st.write(
-    "Use your camera or upload an image of an "
-    "Ethiopian banknote. The AI model will identify "
-    "the denomination."
+    "Upload an image or use your camera to identify "
+    "an Ethiopian Birr banknote. Images outside the "
+    "supported Birr denominations will be classified "
+    "as Other."
 )
 
 st.divider()
@@ -237,7 +249,7 @@ if image is not None:
     st.divider()
 
     recognize_button = st.button(
-        "🔍 Recognize Banknote",
+        "🔍 Analyze Image",
         use_container_width=True
     )
 
@@ -287,23 +299,32 @@ if image is not None:
         # CONFIDENCE MESSAGE
         # --------------------------------------------------
 
-        if confidence >= 0.90:
+        if predicted_class == "Other":
 
             st.info(
-                "The model is highly confident in this prediction."
+                "The image was classified as outside "
+                "the Ethiopian Birr categories supported "
+                "by this system."
+            )
+
+        elif confidence >= 0.90:
+
+            st.success(
+                "✓ The model is highly confident "
+                "in this prediction."
             )
 
         elif confidence >= 0.70:
 
             st.warning(
-                "The model has moderate confidence. "
+                "⚠️ The model has moderate confidence. "
                 "Consider taking another clearer image."
             )
 
         else:
 
             st.warning(
-                "The model has low confidence. "
+                "⚠️ The model has low confidence. "
                 "Try another image with better lighting "
                 "and a clearer view of the banknote."
             )
